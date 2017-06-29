@@ -130,10 +130,15 @@ object BashStartScriptPlugin extends AutoPlugin {
   private[this] def generateMainScripts(discoveredMainClasses: Seq[String],
                                         config: BashScriptConfig,
                                         targetDir: File): Seq[(File, String)] =
-    discoveredMainClasses.map { qualifiedClassName =>
+    discoveredMainClasses.flatMap { qualifiedClassName =>
       val bashConfig =
         config.copy(executableScriptName = makeScriptName(qualifiedClassName))
-      MainScript(qualifiedClassName, bashConfig, targetDir) -> s"$scriptTargetFolder/${bashConfig.executableScriptName}"
+      val extraConfig =
+        config.copy(executableScriptName = "script_name")
+      Seq(
+        MainScript(qualifiedClassName, bashConfig, targetDir) -> s"$scriptTargetFolder/${bashConfig.executableScriptName}",
+        MainScript(qualifiedClassName, extraConfig, targetDir) -> s"$scriptTargetFolder/${extraConfig.executableScriptName}"
+      )
     }
 
   private[this] def makeScriptName(qualifiedClassName: String): String = {
